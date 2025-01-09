@@ -42,6 +42,8 @@ const defaultMarkdown = `
 
 function App() {
   const dialogRef = useRef(null);
+  const textAreaRef  = useRef(null);
+  const previewRef = useRef(null);
 
   // *** useState Start ***
   const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") === "true" ? true : false);
@@ -147,7 +149,6 @@ function App() {
 
   function changeSelectedMarkdownId(id) {
     setChangeDocId(id); // * changeDocId state'i değiştiğinde useEffect çalışacak (Satır: 63-68)
-    setShowMenu(false);
   }
 
   function changeVisible() {
@@ -196,7 +197,7 @@ function App() {
           </div>
           <label className="theme-switch">
             <SunSvg fillColor={!darkMode ? "#fff" : "#5A6069"} />
-            <input class="switch" type="checkbox" checked={darkMode} onChange={changeDarkMode} />
+            <input className="switch" type="checkbox" checked={darkMode} onChange={changeDarkMode} />
             <MoonSvg fillColor={darkMode ? "#fff" : "#5A6069"} />
           </label>
         </nav>
@@ -207,6 +208,7 @@ function App() {
               {showMenu ? <CloseSvg /> : <MenuSvg />}
             </label>
             <div className="doc-title">
+              <h1 className="desktop-title">MARKDOWN</h1>
               <FileSvg />
               {editTitle ? (
                 <div className="file-name-edit">
@@ -214,9 +216,12 @@ function App() {
                   <input type="text" className="file-name-edit-input" defaultValue={selectedMarkdownData.title} onKeyDown={onTitleEditHandle} autoFocus={true} />
                 </div>
               ) : (
-                <h3 className="file-name" onClick={changeTitleHandle}>
-                  {selectedMarkdownData.title}
-                </h3>
+                <div className="file-name-edit">
+                  <span className="tablet" >Document Name</span>
+                  <h3 className="file-name" onClick={changeTitleHandle}>
+                    {selectedMarkdownData.title}
+                  </h3>
+                </div>
               )}
             </div>
             <div className="interaction-btns">
@@ -226,27 +231,34 @@ function App() {
 
               <button className="save-btn" onClick={onSaveHandle} disabled={textAreaValue === selectedMarkdownData.content}>
                 <SaveSvg />
+                <span className="tablet">Save Changes</span>
               </button>
             </div>
           </header>
           <main>
-            <div className="main-info">
-              <span className="view-type">{visible ? "MARKDOWN" : "PREVIEW"}</span>
+            <div className={"main-content " + (visible ? "edit" : "preview")}>
               <label className="view-type-label">
                 <input type="checkbox" className="view-type-checkbox" checked={visible} onChange={changeVisible} />
-                {visible ? <VisibleSvg /> : <UnVisibleSvg />}
+                  {visible ? <VisibleSvg /> : <UnVisibleSvg />}
               </label>
-            </div>
-            <div className="main-content">{visible ?
-              <textarea 
-                className="main-textarea" 
-                placeholder="Type some markdown here..." 
-                value={textAreaValue} 
-                onChange={changeTextAreaValue}
+              <div className="main-edit">
+                <div className="main-info">
+                  <span className="view-type">MARKDOWN</span>
+                </div>
+                <textarea 
+                  ref={textAreaRef}
+                  className="main-textarea" 
+                  placeholder="Type some markdown here..." 
+                  value={textAreaValue} 
+                  onChange={changeTextAreaValue}
                 ></textarea>
-              :
-              <div className="main-preview" dangerouslySetInnerHTML={{ __html: marked(textAreaValue) }} />
-            }
+              </div>
+              <div className="main-preview">
+                <div className="main-info">
+                  <span className="view-type">PREVIEW</span>
+                </div>
+                <div ref={previewRef} className={"main-preview-content"} dangerouslySetInnerHTML={{ __html: marked(textAreaValue) }} />
+              </div>
             </div>
           </main>
         </div>

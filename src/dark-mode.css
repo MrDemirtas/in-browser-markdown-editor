@@ -44,3 +44,15 @@ body.dark-mode {
     }
   }
 }
+
+@media (min-width: 768px) {
+  body.dark-mode {
+    main {
+      .main-content.edit{
+        .main-edit{
+          border-right: 1px solid #5A6069;
+        }
+      }
+    }
+  }
+}
