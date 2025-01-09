@@ -7,9 +7,9 @@ html {
   overflow: hidden;
 }
 
+
 .container {
   display: grid;
-  grid-template-columns: max-content 1fr;
 }
 
 header {
@@ -27,6 +27,14 @@ header {
   cursor: pointer;
 }
 
+.menu-checkbox{
+  display: none;
+}
+
+.menu-checkbox:checked ~ .container {
+  grid-template-columns: 1fr;
+}
+
 .file-name {
   font-size: 15px;
   font-weight: 400;
@@ -34,6 +42,7 @@ header {
   display: flex;
   align-items: center;
   gap: 16px;
+  cursor: pointer;
 }
 
 .interaction-btns {
@@ -47,6 +56,7 @@ header {
   border: none;
   padding: 12px;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .save-btn {
@@ -132,13 +142,15 @@ header {
 .new-doc-btn {
   display: flex;
   align-items: center;
-  padding: 12px 44px;
+  justify-content: center;
+  padding: 12px;
   background-color: #e46643;
   border: none;
   border-radius: 4px;
   color: #fff;
   font-size: 15px;
   line-height: 17.58px;
+  cursor: pointer;
 }
 
 .doc-list{
@@ -156,6 +168,7 @@ header {
   border: none;
   color: #fff;
   gap: 16px;
+  cursor: pointer;
 }
 
 .doc-item.selected {
@@ -165,6 +178,7 @@ header {
 .doc-metadata {
   display: flex;
   flex-direction: column;
+  align-items: start;
   font-size: 15px;
   line-height: 17.58px;
 }

@@ -1,4 +1,4 @@
-import { FileSvg, MenuSvg, SaveSvg, TrashSvg, UnVisibleSvg, VisibleSvg } from "./Svg";
+import { CloseSvg, FileSvg, MenuSvg, SaveSvg, TrashSvg, UnVisibleSvg, VisibleSvg } from "./Svg";
 
 import {marked} from "marked";
 import { useEffect } from "react";
@@ -56,10 +56,11 @@ function App() {
   ]
 );
   const [selectedMarkdownIndex, setSelectedMarkdownIndex] = useState(0);
+  const [selectedMarkdownData, setSelectedMarkdownData] = useState(markdownData[0]);
   const [textAreaValue, setTextAreaValue] = useState(markdownData[selectedMarkdownIndex].content);
   const [editTitle, setEditTitle] = useState(false);
   // *** useStates End ***
-
+  
   // *** TextArea Etkileşimi Start ***
   function changeTextAreaValue(e) {
     setTextAreaValue(e.target.value);
@@ -68,7 +69,7 @@ function App() {
     markdownData[selectedMarkdownIndex].content = textAreaValue;
   }, [textAreaValue])
   // *** TextArea Etkileşimi End ***
-
+  
   // *** Dosya Başlık Düzenleme Start ***
   function onTitleEditHandle(e) {
     if (e.key === "Enter") {
@@ -93,13 +94,44 @@ function App() {
     setMarkdownData([...markdownData]);
   }
 
+  function onTrashHandle() {
+    setMarkdownData(markdownData.filter((item, index) => index !== selectedMarkdownIndex));
+    if (markdownData.length === 1) {
+      onNewDocHandle();
+    }
+  }
+
+  function changeShowMenu() {
+    setShowMenu(!showMenu);
+  }
+console.log(selectedMarkdownIndex)
+  function onNewDocHandle() {
+    const id = crypto.randomUUID();
+    setMarkdownData([
+      ...markdownData,
+      {
+        id,
+        date: (new Date()).toLocaleDateString("tr-TR", {hour: "numeric", minute: "numeric", second: "numeric", year: "numeric", month: "long", day: "numeric"}),
+        title: "untitled-document.md",
+        content: ""
+      }
+    ]);
+    setSelectedMarkdownIndex(markdownData.length);
+    setShowMenu(false);
+  }
+
+  function changeSelectedMarkdownIndex(index) {
+    setSelectedMarkdownIndex(index);
+    setShowMenu(false);
+  }
+
   return (
     <>
-    <div className="container">
-      <nav className="nav">
+    <div className="container" style={{gridTemplateColumns: showMenu ? "350px 1fr" : "1fr"}}>
+      <nav className="nav" style={{display: showMenu ? "grid" : "none"}}>
         <h1>MARKDOWN</h1>
         <h3>MY DOCUMENTS</h3>
-        <button className="new-doc-btn">
+        <button className="new-doc-btn" onClick={onNewDocHandle}>
           + New Document
         </button>
         <div className="doc-list">
@@ -108,7 +140,7 @@ function App() {
               <button 
                 key={item.id} 
                 className={selectedMarkdownIndex === index ? "doc-item selected" : "doc-item"}
-                onClick={() => setSelectedMarkdownIndex(index)}
+                onClick={() => changeSelectedMarkdownIndex(index)}
               >
                 <FileSvg />
                 <div className="doc-metadata">
@@ -123,8 +155,15 @@ function App() {
       <div className="main-container">
         <header>
           <label className="menu-button">
-            <input type="checkbox" checked  />
-            <MenuSvg />
+            <input 
+              type="checkbox"
+              className="menu-checkbox"
+              checked={showMenu}
+              onChange={changeShowMenu}
+            />
+            {
+              showMenu ? <CloseSvg /> : <MenuSvg />
+            }
           </label>
           {
             editTitle ? (
@@ -145,7 +184,7 @@ function App() {
             )
           }
           <div className="interaction-btns">
-            <button className="trash-btn">
+            <button className="trash-btn" onClick={onTrashHandle}>
               <TrashSvg />
             </button>
             <button className="save-btn" onClick={onSaveHandle}>
@@ -178,7 +217,7 @@ function App() {
                 <textarea
                   className="main-textarea"
                   placeholder="Type some markdown here..."
-                  value={textAreaValue}
+                  value={markdownData[selectedMarkdownIndex].content}
                   onChange={changeTextAreaValue}
                 ></textarea>
               ) : (
