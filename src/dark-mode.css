@@ -1,0 +1,46 @@
+body.dark-mode {
+  background-color: #151619;
+  main {
+    .main-info {
+      background-color: #1d1f22;
+      .view-type{
+        color: #C1C4CB;
+      }
+      .view-type-label{
+        svg{
+          fill: #C1C4CB;
+        }
+        &:hover{
+          svg{
+            fill: #e46643;
+          }
+        }
+      }
+    }
+    .main-content{
+      .main-textarea{
+        background-color: #151619;
+        color: #C1C4CB;
+      }
+      .main-preview{
+        h1, h2, h3, h4, h5, h6{
+          color: #fff;
+        }
+        p, ul, ol{
+          color: #C1C4CB;
+        }
+      }
+    }
+  }
+  .delete-dialog{
+    .dialog-container{
+      background-color: #1D1F22;
+      h3{
+        color: #fff;
+      }
+      p{
+        color: #C1C4CB;
+      }
+    }
+  }
+}

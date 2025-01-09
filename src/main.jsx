@@ -1,5 +1,6 @@
 import './reset.css'
 import './App.css'
+import './dark-mode.css'
 
 import App from './App.jsx'
 import { StrictMode } from 'react'

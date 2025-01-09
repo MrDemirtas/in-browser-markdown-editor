@@ -7,7 +7,6 @@ html {
   overflow: hidden;
 }
 
-
 .container {
   display: grid;
 }
@@ -25,9 +24,12 @@ header {
   background-color: #35393f;
   padding: 20px 16px;
   cursor: pointer;
+  &:hover {
+    background-color: #E46643;
+  }
 }
 
-.menu-checkbox{
+.menu-checkbox {
   display: none;
 }
 
@@ -35,14 +37,18 @@ header {
   grid-template-columns: 1fr;
 }
 
+.doc-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .file-name {
   font-size: 15px;
   font-weight: 400;
   line-height: 17.58px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
   cursor: pointer;
+  width: 80%;
 }
 
 .interaction-btns {
@@ -59,8 +65,21 @@ header {
   cursor: pointer;
 }
 
+.trash-btn:hover {
+  svg {
+    fill: #e46643;
+  }
+}
+
 .save-btn {
   background-color: #e46643;
+  &:disabled {
+    background-color: #7c8187;
+    cursor: default;
+  }
+  &:hover:enabled {
+    background-color: #f39765;
+  }
 }
 
 .main-info {
@@ -72,6 +91,12 @@ header {
   label {
     display: flex;
     cursor: pointer;
+  }
+}
+
+.view-type-label:hover{
+  svg{
+    fill: #e46643;
   }
 }
 
@@ -89,7 +114,7 @@ header {
 
 .main-textarea {
   width: 100%;
-  height: 80vh;
+  height: 85vh;
   border: none;
   padding: 16px;
   font-family: "Roboto Mono", sans-serif;
@@ -97,6 +122,7 @@ header {
   line-height: 24px;
   color: #35393f;
   outline: none;
+  resize: none;
 }
 
 .main-preview {
@@ -106,6 +132,18 @@ header {
 }
 
 .file-name-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  span {
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 15.23px;
+    color: #c1c4cb;
+  }
+}
+
+.file-name-edit-input {
   width: 100%;
   background-color: inherit;
   border: none;
@@ -121,7 +159,7 @@ header {
   height: 100vh;
   display: grid;
   gap: 28px;
-  grid-template-rows: repeat(3, max-content);
+  grid-template-rows: max-content max-content max-content 1fr max-content;
   h1 {
     font-family: "Commissioner", sans-serif;
     font-size: 15px;
@@ -151,16 +189,19 @@ header {
   font-size: 15px;
   line-height: 17.58px;
   cursor: pointer;
+  &:hover {
+    background-color: #f39765;
+  }
 }
 
-.doc-list{
+.doc-list {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
 }
 
 .doc-item {
-  padding: 8px;
+  padding: 16px 12px;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -169,10 +210,13 @@ header {
   color: #fff;
   gap: 16px;
   cursor: pointer;
+  &:hover {
+    background-color: #2b2d31;
+  }
 }
 
 .doc-item.selected {
-  background-color: #2b2d31;
+  background-color: #111111;
 }
 
 .doc-metadata {
@@ -181,8 +225,96 @@ header {
   align-items: start;
   font-size: 15px;
   line-height: 17.58px;
+  gap: 4px;
 }
 
-.doc-date{
-  color: #7C8187;
+.doc-date {
+  color: #7c8187;
+}
+
+.delete-dialog {
+  border: none;
+  margin: auto;
+  max-width: 90%;
+  padding: 0;
+}
+
+.dialog-container {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 4px;
+
+  h3 {
+    color: #35393f;
+    font-size: 20px;
+    line-height: 26.38px;
+  }
+
+  p {
+    color: #7c8187;
+    font-size: 14px;
+    line-height: 24px;
+  }
+}
+
+.delete-dialog-btn,
+.cancel-dialog-btn {
+  font-size: 15px;
+  line-height: 17.58px;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-dialog-btn {
+  background-color: #e46643;
+  &:hover {
+    background-color: #f39765;
+  }
+}
+
+.cancel-dialog-btn {
+  background-color: #7c8187;
+  &:hover {
+    background-color: #a3a8ad;
+  }
+}
+
+.theme-switch{
+  display: flex;
+  align-items: center;
+}
+
+.switch {
+  appearance: none;
+  background-color: #fff;
+  height: 22px;
+  width: 48px;
+  display: inline-flex;
+  margin-inline: 16px;
+  border-radius: 15px;
+  box-sizing: border-box;
+  padding: 4px;
+  transition: all 0.8s ease-in-out;
+  cursor: pointer;
+}
+
+.switch:after {
+  content: "";
+  background-color: #5964e0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+.switch:checked {
+  background-color: #fff;
+}
+
+.switch:checked:after {
+  transform: translateX(180%);
 }

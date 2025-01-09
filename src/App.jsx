@@ -1,8 +1,7 @@
-import { CloseSvg, FileSvg, MenuSvg, SaveSvg, TrashSvg, UnVisibleSvg, VisibleSvg } from "./Svg";
+import { CloseSvg, FileSvg, MenuSvg, MoonSvg, SaveSvg, SunSvg, TrashSvg, UnVisibleSvg, VisibleSvg } from "./Svg";
+import { useEffect, useRef, useState } from "react";
 
-import {marked} from "marked";
-import { useEffect } from "react";
-import {useState} from "react";
+import { marked } from "marked";
 
 const defaultMarkdown = `
   # Welcome to Markdown
@@ -42,196 +41,235 @@ const defaultMarkdown = `
 `;
 
 function App() {
-  // *** useStates Start ***
+  const dialogRef = useRef(null);
+
+  // *** useState Start ***
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") === "true" ? true : false);
   const [visible, setVisible] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
-  const [markdownData, setMarkdownData] = useState(
-    [
-      {
-        id: crypto.randomUUID(),
-        date: (new Date()).toLocaleDateString("tr-TR", {year: "numeric", month: "long", day: "numeric"}),
-        title: "Welcome.md",
-        content: defaultMarkdown
-      },
-  ]
-);
-  const [selectedMarkdownIndex, setSelectedMarkdownIndex] = useState(0);
-  const [selectedMarkdownData, setSelectedMarkdownData] = useState(markdownData[0]);
-  const [textAreaValue, setTextAreaValue] = useState(markdownData[selectedMarkdownIndex].content);
   const [editTitle, setEditTitle] = useState(false);
-  // *** useStates End ***
-  
+  const [markdownData, setMarkdownData] = useState(
+    localStorage.getItem("markdownData")
+      ? JSON.parse(localStorage.getItem("markdownData"))
+      : [
+          {
+            id: crypto.randomUUID(),
+            date: new Date().toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "numeric" }),
+            title: "Welcome.md",
+            content: defaultMarkdown,
+          },
+        ]
+  );
+  const [selectedMarkdownData, setSelectedMarkdownData] = useState(markdownData[markdownData.length - 1]);
+  const [textAreaValue, setTextAreaValue] = useState("");
+  const [changeDocId, setChangeDocId] = useState("");
+  // *** useState End ***
+
+  // *** useEffect Start ***
+  useEffect(() => {
+    if (changeDocId === "") return;
+    const newMarkdownData = markdownData.find((item) => item.id === changeDocId);
+    setSelectedMarkdownData(newMarkdownData);
+  }, [changeDocId]);
+
+  useEffect(() => {
+    if (selectedMarkdownData === "") return;
+    setTextAreaValue(selectedMarkdownData.content); // * selectedMarkdownData state her değiştiğinde textAreaValue state'i değişerek textArea içeriği güncellenecek
+  }, [selectedMarkdownData]);
+
+  useEffect(() => {
+    localStorage.setItem("markdownData", JSON.stringify(markdownData)); // * markdownData state her değiştiğinde localStorage güncellenecek
+    }, [markdownData]);
+
+    useEffect(() => {
+      if (darkMode) {
+        document.body.classList.add("dark-mode");
+      }else {
+        document.body.removeAttribute("class");
+      }
+    }, [darkMode]);
+  // *** useEffect End ***
+
   // *** TextArea Etkileşimi Start ***
   function changeTextAreaValue(e) {
     setTextAreaValue(e.target.value);
   }
-  useEffect(() => {
-    markdownData[selectedMarkdownIndex].content = textAreaValue;
-  }, [textAreaValue])
   // *** TextArea Etkileşimi End ***
-  
+
   // *** Dosya Başlık Düzenleme Start ***
   function onTitleEditHandle(e) {
     if (e.key === "Enter") {
-      markdownData[selectedMarkdownIndex].title = e.target.value;
+      selectedMarkdownData.title = e.target.value;
       setMarkdownData([...markdownData]);
       setEditTitle(false);
-    }else if (e.key === "Escape") {
+    } else if (e.key === "Escape") {
       setEditTitle(false);
     }
   }
   // *** Dosya Başlık Düzenleme End ***
+
+  // *** Silme İşlemi Start ***
+  function onTrashHandle() {
+    dialogRef.current.showModal();
+  }
+  function onConfirmDeleteHandle() {
+    const newMarkdownData = markdownData.filter((item) => item.id !== selectedMarkdownData.id);
+    setMarkdownData(newMarkdownData);
+    if (newMarkdownData.length !== 0) {
+      setSelectedMarkdownData(newMarkdownData[newMarkdownData.length - 1]);
+    } else {
+      onNewDocHandle();
+    }
+    dialogRef.current.close();
+  }
+  //* Silme İşlemi End ***
+
+  // *** Yeni Dosya Oluşturma Start ***
+  function onNewDocHandle() {
+    const id = crypto.randomUUID();
+    const options = {
+      id,
+      date: new Date().toLocaleDateString("tr-TR", { hour: "numeric", minute: "numeric", second: "numeric", year: "numeric", month: "long", day: "numeric" }),
+      title: "untitled-document.md",
+      content: "",
+    };
+    setMarkdownData((prev) => {
+      if (prev.length === 0) {
+        return [options];
+      } else {
+        return [...markdownData, options];
+      }
+    });
+    setChangeDocId(id);
+    setShowMenu(false);
+  }
+  // *** Yeni Dosya Oluşturma End ***
+
+  function changeSelectedMarkdownId(id) {
+    setChangeDocId(id); // * changeDocId state'i değiştiğinde useEffect çalışacak (Satır: 63-68)
+    setShowMenu(false);
+  }
 
   function changeVisible() {
     setVisible(!visible);
   }
 
   function changeTitleHandle() {
-    setEditTitle(true)
+    setEditTitle(true);
   }
 
   function onSaveHandle() {
+    selectedMarkdownData.content = textAreaValue;
     setMarkdownData([...markdownData]);
-  }
-
-  function onTrashHandle() {
-    setMarkdownData(markdownData.filter((item, index) => index !== selectedMarkdownIndex));
-    if (markdownData.length === 1) {
-      onNewDocHandle();
-    }
+    localStorage.setItem("markdownData", JSON.stringify([...markdownData]));
   }
 
   function changeShowMenu() {
     setShowMenu(!showMenu);
   }
-console.log(selectedMarkdownIndex)
-  function onNewDocHandle() {
-    const id = crypto.randomUUID();
-    setMarkdownData([
-      ...markdownData,
-      {
-        id,
-        date: (new Date()).toLocaleDateString("tr-TR", {hour: "numeric", minute: "numeric", second: "numeric", year: "numeric", month: "long", day: "numeric"}),
-        title: "untitled-document.md",
-        content: ""
-      }
-    ]);
-    setSelectedMarkdownIndex(markdownData.length);
-    setShowMenu(false);
-  }
 
-  function changeSelectedMarkdownIndex(index) {
-    setSelectedMarkdownIndex(index);
-    setShowMenu(false);
+  function changeDarkMode() {
+    const currentDarkMode = !darkMode;
+    setDarkMode(currentDarkMode);
+    localStorage.setItem("darkMode", currentDarkMode);
   }
 
   return (
     <>
-    <div className="container" style={{gridTemplateColumns: showMenu ? "350px 1fr" : "1fr"}}>
-      <nav className="nav" style={{display: showMenu ? "grid" : "none"}}>
-        <h1>MARKDOWN</h1>
-        <h3>MY DOCUMENTS</h3>
-        <button className="new-doc-btn" onClick={onNewDocHandle}>
-          + New Document
-        </button>
-        <div className="doc-list">
-          {
-            markdownData.map((item, index) => (
-              <button 
-                key={item.id} 
-                className={selectedMarkdownIndex === index ? "doc-item selected" : "doc-item"}
-                onClick={() => changeSelectedMarkdownIndex(index)}
-              >
+      <div className="container" style={{ gridTemplateColumns: showMenu ? "300px 1fr" : "1fr" }}>
+        <nav className="nav" style={{ display: showMenu ? "grid" : "none" }}>
+          <h1>MARKDOWN</h1>
+          <h3>MY DOCUMENTS</h3>
+          <button className="new-doc-btn" onClick={onNewDocHandle}>
+            + New Document
+          </button>
+          <div className="doc-list">
+            {markdownData.map((item) => (
+              <button key={item.id} className={selectedMarkdownData.id === item.id ? "doc-item selected" : "doc-item"} onClick={() => changeSelectedMarkdownId(item.id)}>
                 <FileSvg />
                 <div className="doc-metadata">
                   <span className="doc-date">{item.date}</span>
                   <span className="doc-title">{item.title}</span>
                 </div>
               </button>
-            ))
-          }
-        </div>
-      </nav>
-      <div className="main-container">
-        <header>
-          <label className="menu-button">
-            <input 
-              type="checkbox"
-              className="menu-checkbox"
-              checked={showMenu}
-              onChange={changeShowMenu}
-            />
-            {
-              showMenu ? <CloseSvg /> : <MenuSvg />
-            }
+            ))}
+          </div>
+          <label className="theme-switch">
+            <SunSvg fillColor={!darkMode ? "#fff" : "#5A6069"} />
+            <input class="switch" type="checkbox" checked={darkMode} onChange={changeDarkMode} />
+            <MoonSvg fillColor={darkMode ? "#fff" : "#5A6069"} />
           </label>
-          {
-            editTitle ? (
-              <input 
-                type="text" 
-                className="file-name-edit" 
-                defaultValue={markdownData[selectedMarkdownIndex].title}
-                onKeyDown={onTitleEditHandle}
-                autoFocus={true}
-              />
-            ) : (
-              <h3 className="file-name" onClick={changeTitleHandle}>
-                <FileSvg />
-                {
-                  markdownData[selectedMarkdownIndex].title
-                }
-              </h3>
-            )
-          }
-          <div className="interaction-btns">
-            <button className="trash-btn" onClick={onTrashHandle}>
-              <TrashSvg />
-            </button>
-            <button className="save-btn" onClick={onSaveHandle}>
-              <SaveSvg />
-            </button>
-          </div>
-        </header>
-        <main>
-          <div className="main-info">
-            <span className="view-type">
-            {
-              visible ? "MARKDOWN" : "PREVIEW"
-            }
-            </span>
-            <label>
-              <input
-                type="checkbox" 
-                className="view-type-checkbox" 
-                checked={visible} 
-                onChange={changeVisible} 
-              />
-              {
-                visible ? <VisibleSvg /> : <UnVisibleSvg />
-              }
+        </nav>
+        <div className="main-container">
+          <header>
+            <label className="menu-button">
+              <input type="checkbox" className="menu-checkbox" checked={showMenu} onChange={changeShowMenu} />
+              {showMenu ? <CloseSvg /> : <MenuSvg />}
             </label>
-          </div>
-          <div className="main-content">
-            {
-              visible ? (
-                <textarea
-                  className="main-textarea"
-                  placeholder="Type some markdown here..."
-                  value={markdownData[selectedMarkdownIndex].content}
-                  onChange={changeTextAreaValue}
-                ></textarea>
+            <div className="doc-title">
+              <FileSvg />
+              {editTitle ? (
+                <div className="file-name-edit">
+                  <span>Document Name</span>
+                  <input type="text" className="file-name-edit-input" defaultValue={selectedMarkdownData.title} onKeyDown={onTitleEditHandle} autoFocus={true} />
+                </div>
               ) : (
-                <div 
-                  className="main-preview" 
-                  dangerouslySetInnerHTML={{__html: marked(markdownData[selectedMarkdownIndex].content)}}
-                />
-              )
+                <h3 className="file-name" onClick={changeTitleHandle}>
+                  {selectedMarkdownData.title}
+                </h3>
+              )}
+            </div>
+            <div className="interaction-btns">
+              <button className="trash-btn" onClick={onTrashHandle}>
+                <TrashSvg />
+              </button>
+
+              <button className="save-btn" onClick={onSaveHandle} disabled={textAreaValue === selectedMarkdownData.content}>
+                <SaveSvg />
+              </button>
+            </div>
+          </header>
+          <main>
+            <div className="main-info">
+              <span className="view-type">{visible ? "MARKDOWN" : "PREVIEW"}</span>
+              <label className="view-type-label">
+                <input type="checkbox" className="view-type-checkbox" checked={visible} onChange={changeVisible} />
+                {visible ? <VisibleSvg /> : <UnVisibleSvg />}
+              </label>
+            </div>
+            <div className="main-content">{visible ?
+              <textarea 
+                className="main-textarea" 
+                placeholder="Type some markdown here..." 
+                value={textAreaValue} 
+                onChange={changeTextAreaValue}
+                ></textarea>
+              :
+              <div className="main-preview" dangerouslySetInnerHTML={{ __html: marked(textAreaValue) }} />
             }
-          </div>
-        </main>
+            </div>
+          </main>
+        </div>
+        <DeleteDialog dialogRef={dialogRef} onConfirmDeleteHandle={onConfirmDeleteHandle} />
       </div>
-    </div>
     </>
+  );
+}
+
+function DeleteDialog({ dialogRef, onConfirmDeleteHandle }) {
+  return (
+    <dialog ref={dialogRef} className="delete-dialog">
+      <div className="dialog-container">
+        <h3>Delete this document?</h3>
+        <p>Are you sure you want to delete the ‘welcome.md’ document and its contents? This action cannot be reversed.</p>
+        <button className="delete-dialog-btn" onClick={onConfirmDeleteHandle}>
+          Confirm & Delete
+        </button>
+        <button className="cancel-dialog-btn" onClick={() => dialogRef.current.close()}>
+          Cancel
+        </button>
+      </div>
+    </dialog>
   );
 }
 
