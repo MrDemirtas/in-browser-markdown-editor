@@ -143,7 +143,6 @@ function App() {
       }
     });
     setChangeDocId(id);
-    setShowMenu(false);
   }
   // *** Yeni Dosya Oluşturma End ***
 
