@@ -42,8 +42,6 @@ const defaultMarkdown = `
 
 function App() {
   const dialogRef = useRef(null);
-  const textAreaRef  = useRef(null);
-  const previewRef = useRef(null);
 
   // *** useState Start ***
   const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") === "true" ? true : false);
@@ -51,52 +49,22 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const [editTitle, setEditTitle] = useState(false);
   const [markdownData, setMarkdownData] = useState(
-    localStorage.getItem("markdownData")
-      ? JSON.parse(localStorage.getItem("markdownData"))
-      : [
-          {
-            id: crypto.randomUUID(),
-            date: new Date().toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "numeric" }),
-            title: "Welcome.md",
-            content: defaultMarkdown,
-          },
-        ]
+    localStorage.getItem("markdownData") ? 
+      JSON.parse(localStorage.getItem("markdownData"))
+      : 
+      [
+        {
+          id: crypto.randomUUID(),
+          date: new Date().toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "numeric" }),
+          title: "Welcome.md",
+          content: defaultMarkdown,
+        },
+      ]
   );
   const [selectedMarkdownData, setSelectedMarkdownData] = useState(markdownData[markdownData.length - 1]);
   const [textAreaValue, setTextAreaValue] = useState("");
   const [changeDocId, setChangeDocId] = useState("");
   // *** useState End ***
-
-  // *** useEffect Start ***
-  useEffect(() => {
-    if (changeDocId === "") return;
-    const newMarkdownData = markdownData.find((item) => item.id === changeDocId);
-    setSelectedMarkdownData(newMarkdownData);
-  }, [changeDocId]);
-
-  useEffect(() => {
-    if (selectedMarkdownData === "") return;
-    setTextAreaValue(selectedMarkdownData.content); // * selectedMarkdownData state her değiştiğinde textAreaValue state'i değişerek textArea içeriği güncellenecek
-  }, [selectedMarkdownData]);
-
-  useEffect(() => {
-    localStorage.setItem("markdownData", JSON.stringify(markdownData)); // * markdownData state her değiştiğinde localStorage güncellenecek
-    }, [markdownData]);
-
-    useEffect(() => {
-      if (darkMode) {
-        document.body.classList.add("dark-mode");
-      }else {
-        document.body.removeAttribute("class");
-      }
-    }, [darkMode]);
-  // *** useEffect End ***
-
-  // *** TextArea Etkileşimi Start ***
-  function changeTextAreaValue(e) {
-    setTextAreaValue(e.target.value);
-  }
-  // *** TextArea Etkileşimi End ***
 
   // *** Dosya Başlık Düzenleme Start ***
   function onTitleEditHandle(e) {
@@ -142,36 +110,68 @@ function App() {
         return [...markdownData, options];
       }
     });
-    setChangeDocId(id);
+    setChangeDocId(id); // * changeDocId state'i değiştiğinde useEffect çalışacak (satır: 122-126)
   }
   // *** Yeni Dosya Oluşturma End ***
 
+  // *** Dosya Değiştirme Start ***
   function changeSelectedMarkdownId(id) {
-    setChangeDocId(id); // * changeDocId state'i değiştiğinde useEffect çalışacak (Satır: 63-68)
+    setChangeDocId(id); // * changeDocId state'i değiştiğinde useEffect çalışacak
   }
+  
+  useEffect(() => {
+    if (changeDocId === "") return;
+    const newMarkdownData = markdownData.find((item) => item.id === changeDocId);
+    setSelectedMarkdownData(newMarkdownData); // * selectedMarkdownData state'i değişerek alttaki useEffect çalışacak
+  }, [changeDocId]);
 
-  function changeVisible() {
-    setVisible(!visible);
-  }
+  useEffect(() => {
+    if (selectedMarkdownData === "") return;
+    setTextAreaValue(selectedMarkdownData.content); // * selectedMarkdownData state her değiştiğinde textAreaValue state'i değişerek textArea içeriği güncellenecek
+  }, [selectedMarkdownData]);
+  // *** Dosya Değiştirme End ***
 
-  function changeTitleHandle() {
-    setEditTitle(true);
-  }
-
+  // *** Dosya Kaydetme Start ***
   function onSaveHandle() {
     selectedMarkdownData.content = textAreaValue;
-    setMarkdownData([...markdownData]);
-    localStorage.setItem("markdownData", JSON.stringify([...markdownData]));
+    setMarkdownData([...markdownData]); // * markdownData state'i güncellenecek ve useEffect çalışarak localStorage'a kaydedilecek
   }
+  
+  useEffect(() => {
+    localStorage.setItem("markdownData", JSON.stringify(markdownData)); // * markdownData state'i her değiştiğinde localStorage'a kaydedilecek
+  }, [markdownData]);
+  // *** Dosya Kaydetme End ***
 
-  function changeShowMenu() {
-    setShowMenu(!showMenu);
-  }
-
+  // *** Dark Mode Start ***
   function changeDarkMode() {
     const currentDarkMode = !darkMode;
     setDarkMode(currentDarkMode);
     localStorage.setItem("darkMode", currentDarkMode);
+  }
+  
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+    }else {
+      document.body.removeAttribute("class");
+    }
+  }, [darkMode]);
+  // *** Dark Mode End ***
+
+  function changeVisible() {
+    setVisible(!visible); // * Markdown Editör ve Markdown Preview arasında geçiş yapacak
+  }
+
+  function changeTitleHandle() {
+    setEditTitle(true); // * Dosya adı düzenleme aktif olacak
+  }
+
+  function changeTextAreaValue(e) {
+    setTextAreaValue(e.target.value); // * textarea'daki yazılar textAreaValue state'ine aktarılacak
+  }
+
+  function changeShowMenu() {
+    setShowMenu(!showMenu); // * Menü açılıp kapanacak
   }
 
   return (
@@ -245,7 +245,6 @@ function App() {
                   <span className="view-type">MARKDOWN</span>
                 </div>
                 <textarea 
-                  ref={textAreaRef}
                   className="main-textarea" 
                   placeholder="Type some markdown here..." 
                   value={textAreaValue} 
@@ -256,7 +255,7 @@ function App() {
                 <div className="main-info">
                   <span className="view-type">PREVIEW</span>
                 </div>
-                <div ref={previewRef} className={"main-preview-content"} dangerouslySetInnerHTML={{ __html: marked(textAreaValue) }} />
+                <div className={"main-preview-content"} dangerouslySetInnerHTML={{ __html: marked(textAreaValue) }} />
               </div>
             </div>
           </main>

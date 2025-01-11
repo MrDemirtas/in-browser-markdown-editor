@@ -29,6 +29,18 @@ body.dark-mode {
         p, ul, ol{
           color: #C1C4CB;
         }
+        blockquote{
+          background-color: #2B2D31;
+          p{
+            color: #fff;
+          }
+        }
+        pre{
+          background-color: #2B2D31;
+          code{
+            color: #fff;
+          }
+        }
       }
     }
   }
